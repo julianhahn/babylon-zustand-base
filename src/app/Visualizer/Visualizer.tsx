@@ -9,28 +9,30 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder'
 import { Scene } from '@babylonjs/core/scene'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
+import { useSceneStore } from '@/stores/sceneStore'
 export function Visualizer() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const [scene, setScene] = useState<Scene | null>(null)
+    const sceneStore = useSceneStore()
+    const storeScene = sceneStore.scene
     const [engine, setEngine] = useState<Engine | null>(null)
 
     useEffect(() => {
         if (!canvasRef.current) return
         const engine = new Engine(canvasRef.current, true)
         setEngine(engine)
+        const scene = new Scene(engine)
+        sceneStore.setScene(scene)
     }, [canvasRef])
 
     useEffect(() => {
-        if (!engine) return
-        const scene = new Scene(engine)
-        setScene(scene)
-    }, [engine])
-
-    useEffect(() => {
-        if (!engine || !scene) return
+        if (!engine || !storeScene) return
         // This creates and positions a free camera (non-mesh)
-        var camera = new FreeCamera('camera1', new Vector3(0, 5, -10), scene)
-        const newMaterial = new StandardMaterial('newMaterial', scene)
+        var camera = new FreeCamera(
+            'camera1',
+            new Vector3(0, 5, -10),
+            storeScene
+        )
+        const newMaterial = new StandardMaterial('newMaterial', storeScene)
         // This targets the camera to scene origin
         camera.setTarget(Vector3.Zero())
 
@@ -38,7 +40,11 @@ export function Visualizer() {
         camera.attachControl(canvasRef.current, true)
 
         // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-        var light = new HemisphericLight('light1', new Vector3(0, 1, 0), scene)
+        var light = new HemisphericLight(
+            'light1',
+            new Vector3(0, 1, 0),
+            storeScene
+        )
 
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7
@@ -47,14 +53,14 @@ export function Visualizer() {
         var sphere = CreateSphere(
             'sphere',
             { diameter: 2, segments: 32 },
-            scene
+            storeScene
         )
 
         // Move the sphere upward 1/2 its height
         sphere.position.y = 1
         sphere.material = newMaterial
         // Our built-in 'ground' shape.
-        var ground = CreateGround('ground', { width: 6, height: 6 }, scene)
+        var ground = CreateGround('ground', { width: 6, height: 6 }, storeScene)
         // Render every frame
 
         let numberOfTimes = 0
@@ -64,7 +70,7 @@ export function Visualizer() {
             if (numberOfTimes--) {
                 engine.resize()
             }
-            scene.render()
+            storeScene.render()
         }
 
         // on resize needed callback -
@@ -72,7 +78,7 @@ export function Visualizer() {
             numberOfTimes = 5
         }
         engine.runRenderLoop(renderLoop)
-    }, [scene])
+    }, [storeScene])
 
     return (
         <canvas
