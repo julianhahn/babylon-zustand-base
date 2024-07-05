@@ -56,9 +56,22 @@ export function Visualizer() {
         // Our built-in 'ground' shape.
         var ground = CreateGround('ground', { width: 6, height: 6 }, scene)
         // Render every frame
-        engine.runRenderLoop(() => {
+
+        let numberOfTimes = 0
+        //...
+        // Render loop
+        const renderLoop = () => {
+            if (numberOfTimes--) {
+                engine.resize()
+            }
             scene.render()
-        })
+        }
+
+        // on resize needed callback -
+        const onResizeNeeded = () => {
+            numberOfTimes = 5
+        }
+        engine.runRenderLoop(renderLoop)
     }, [scene])
 
     return <canvas ref={canvasRef} id="renderCanvas" touch-action="none" />
