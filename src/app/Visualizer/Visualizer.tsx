@@ -74,5 +74,12 @@ export function Visualizer() {
         engine.runRenderLoop(renderLoop)
     }, [scene])
 
-    return <canvas ref={canvasRef} id="renderCanvas" touch-action="none" />
+    return (
+        <canvas
+            ref={canvasRef}
+            id="renderCanvas"
+            touch-action="none"
+            tabIndex={0}
+        />
+    )
 }
